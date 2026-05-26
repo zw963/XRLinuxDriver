@@ -204,24 +204,21 @@ bool all_features_in_license(char** requested_features, int requested_count) {
                         }
                         (*all_features)[transient_all_features_count++] = feature_copy;
 
-                        // if status is "on" or "trial" and the current system time is not past the endDate, add to the granted features array
+                        // Treat active/trial features as granted without enforcing endDate expiry.
                         bool enabled = false;
                         if (strcmp(featureStatus, "on") == 0 || strcmp(featureStatus, "trial") == 0) {
-                            struct timeval tv;
-                            gettimeofday(&tv, NULL);
-                            if (!featureEndDate || json_object_get_int(featureEndDate) > tv.tv_sec) {
-                                char** granted_temp = realloc(*granted_features, (transient_granted_count + 1) * sizeof(char*));
-                                if (!granted_temp) {
-                                    log_error("Failed to allocate memory for granted features\n");
+                            (void)featureEndDate;
+                            char** granted_temp = realloc(*granted_features, (transient_granted_count + 1) * sizeof(char*));
+                            if (!granted_temp) {
+                                log_error("Failed to allocate memory for granted features\n");
+                            } else {
+                                *granted_features = granted_temp;
+                                char* granted_copy = strdup(featureName);
+                                if (!granted_copy) {
+                                    log_error("Failed to allocate memory for granted feature name\n");
                                 } else {
-                                    *granted_features = granted_temp;
-                                    char* granted_copy = strdup(featureName);
-                                    if (!granted_copy) {
-                                        log_error("Failed to allocate memory for granted feature name\n");
-                                    } else {
-                                        (*granted_features)[transient_granted_count++] = granted_copy;
-                                        enabled = true;
-                                    }
+                                    (*granted_features)[transient_granted_count++] = granted_copy;
+                                    enabled = true;
                                 }
                             }
                         }
