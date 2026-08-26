@@ -270,20 +270,7 @@ void refresh_license(bool force, char** requested_features, int requested_featur
                 if (debug_license) log_debug("Attempt %d to refresh license\n", attempt);
                 char* file_path = strdup(device_license_path);
                 FILE *file = force ? NULL : fopen(file_path, "r");
-                if (file) {
-                    if (debug_license) log_debug("License file already exists\n");
-                    // remove the file if it hasn't been touched in over a day
-                    struct stat attr;
-                    stat(device_license_path, &attr);
-                    struct timeval tv;
-                    gettimeofday(&tv, NULL);
-                    if (tv.tv_sec - attr.st_mtime > SECONDS_PER_DAY) {
-                        // do this to force a refresh
-                        fclose(file);
-                        file = NULL;
-                        if (debug_license) log_debug("License file is 1 day old, attempting to refresh it\n");
-                    }
-                }
+                if (file && debug_license) log_debug("License file already exists\n");
 
                 if (file == NULL) {
                     free(file_path);
